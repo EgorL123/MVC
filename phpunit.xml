@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<phpunit bootstrap="vendor/autoload.php">
+    <testsuite name="ValidatorTest">
+        <directory suffix="Test.php">./tests/Unit/Validator</directory>
+    </testsuite>
+
+    <testsuite name="UserTest">
+        <directory suffix="Test.php">./tests/Unit/User</directory>
+    </testsuite>
+
+    <testsuite name="NormalizerTest">
+        <directory suffix="Test.php">./tests/Unit/Normalizer</directory>
+    </testsuite>
+
+    <testsuite name="MessageTest">
+        <directory suffix="Test.php">./tests/Unit/Message</directory>
+    </testsuite>
+
+    <filter>
+        <whitelist>
+            <directory suffix="Test.php">./tests/Unit/Validator</directory>
+        </whitelist>
+        <whitelist>
+            <directory suffix="Test.php">./tests/Unit/User</directory>
+        </whitelist>
+        <whitelist>
+            <directory suffix="Test.php">./tests/Unit/Normalizer</directory>
+        </whitelist>
+        <whitelist>
+            <directory suffix="Test.php">./tests/Unit/Message</directory>
+        </whitelist>
+    </filter>
+</phpunit>

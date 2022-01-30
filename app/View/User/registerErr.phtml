@@ -1,0 +1,34 @@
+<?php
+/** @var array $data */
+
+$errorsDescription = explode('<br>', file_get_contents(PROJECT_ROOT_DIR .
+    DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . "Errors.html", 1));
+?>
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../../../html/css/style.css">
+
+    <title>Document</title>
+</head>
+<body>
+<p class="error_text">Ошибка!
+<p></p>
+<?php
+
+
+foreach (\Core\Validator::getErrors($data['errCodes']) as $code) {
+    echo "<p class='error_text'>", $errorsDescription[$code], "</p>";
+}
+
+?>
+<a href="/html/user/register" class="redirect_link">Регистрация</a><br>
+<a href="/html/user/authorization" class="redirect_link">Авторизация</a>
+</body>
+</html>
+
