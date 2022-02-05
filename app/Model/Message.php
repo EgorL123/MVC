@@ -56,8 +56,9 @@ class Message extends AbstractModel
     public static function getLastId(): ?int
     {
         $pdo = DataBase::getInstance();
+        $sql = "SELECT id FROM messages ORDER BY id DESC";
 
-        return $pdo->lastInsertId();
+        return $pdo->fetchAll($sql,[])[0]['id'];
     }
 
 

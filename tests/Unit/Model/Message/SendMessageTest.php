@@ -2,6 +2,7 @@
 
 namespace Message;
 use App\Model\Message;
+use Core\DataBase;
 use const EXPECTED_EXECUTE_QUERY_RESULT;
 
 class SendMessageTest extends \PHPUnit\Framework\TestCase
@@ -41,6 +42,7 @@ class SendMessageTest extends \PHPUnit\Framework\TestCase
     public function testSend(): void
     {
         \App\Model\Message::send($this->object->getId(), $this->faker->text, '');
+
         $lastId = Message::getLastId();
 
         $this->assertTrue(!empty(Message::getById($lastId)));

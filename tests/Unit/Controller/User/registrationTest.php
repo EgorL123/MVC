@@ -78,10 +78,17 @@ class RegistrationTest extends \PHPUnit\Framework\TestCase
             ];
 
 
-        $this->expectException(\Core\RedirectException::class);
-        $this->userController->registerAction();
-        $this->assertTrue(empty($this->userController->getErrors()));
+        try
+        {
+            $this->userController->registerAction();
+        } catch (\Core\RedirectException $e)
+        {
+            $user = new \App\Model\User('',$_POST['password'], $_POST['name'], $_POST['email']);
+            $user->setId(\App\Model\User::getByEmail($_POST['email'])->getId());
+            $this->assertTrue(empty($this->userController->getErrors()));
 
+            $user->delete();
+        }
 
 
     }

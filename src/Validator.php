@@ -156,7 +156,6 @@ class Validator
      */
     public static function validateImageType(string $type): array
     {
-
         $errors = [];
         if (!in_array($type, self::ALLOWED_IMAGE_TYPES)) {
             $errors[] = INCORRECT_IMAGE_TYPE;

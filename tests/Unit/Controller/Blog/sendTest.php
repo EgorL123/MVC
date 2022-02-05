@@ -38,7 +38,7 @@ class SendTest extends \PHPUnit\Framework\TestCase
      */
     public function testSend(array $data): void
     {
-        $_FILES['image'] = ['type' => "image\\".$data[1]];
+        $_FILES['image'] = ['type' => "image/".$data[1]];
 
         $_POST['text'] = $data[0];
         $this->blogController->sendAction(0);

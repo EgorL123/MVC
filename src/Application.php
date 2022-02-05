@@ -22,7 +22,7 @@ class Application
             session_start();
             $this->addRoutes();
             $this->initController();
-            $this->initUser();
+            //$this->initUser();
             $action = $this->action;
             $this->controller->setView(new Twig());
             $this->controller->$action();

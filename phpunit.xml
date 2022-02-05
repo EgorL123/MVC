@@ -14,9 +14,9 @@
     </testsuite>
 
     <testsuite name="MessageTest">
-        <directory suffix="Test.php">./tests/Unit/Model/Message</directory>
+        <directory suffix="Test.php">./tests/Unit/Model/Message/SendMessageTest.php</directory>
     </testsuite>
-        <testsuite name="UserControllerTest">
+      <testsuite name="UserControllerTest">
         <directory suffix="Test.php">./tests/Unit/Controller/User</directory>
     </testsuite>
         <testsuite name="BlogControllerTest">

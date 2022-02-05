@@ -8,6 +8,7 @@ use Core\DataBase;
 use Core\Normalizer;
 use Core\Validator;
 use PharIo\Manifest\ElementCollection;
+use PHPStan\BetterReflection\Identifier\Identifier;
 
 class Blog extends AbstractController
 {
@@ -64,10 +65,8 @@ class Blog extends AbstractController
             ob_start();
         }
 
-
-        $imageExtension = explode('\\', $_FILES['image']['type'])[1];
+        $imageExtension = explode('/', $_FILES['image']['type'])[1];
         Normalizer::normalizeSpecialChars($_POST);
-
 
         if (empty($_POST['text'])) {
             $this->errors[] = EMPTY_MESSAGE_TEXT;
@@ -79,11 +78,11 @@ class Blog extends AbstractController
         }
 
         if (isset($imageExtension) && !empty($errors = Validator::validateImageType($imageExtension))) {
-            $this->errors = $errors;
+            $this->errors[] = INCORRECT_IMAGE_TYPE;
         }
 
         if (!empty($errors = Validator::validateMessageText($_POST['text']))) {
-            $this->errors = $errors;
+            $this->errors[] = MESSAGE_TEXT_INCORRECT_LENGTH_MAX;
         }
 
         if (!empty($this->errors)) {
@@ -91,14 +90,14 @@ class Blog extends AbstractController
             echo $this->getView()->render($this->pathToPatterns,
                 ['errCodes' => $this->errors], 'sendErr.twig', 0, 0, 0);
 
-            return;
+            return null;
 
         }
 
 
         Message::send($_SESSION['id'], $_POST['text'], $imageExtension);
 
-        if(!isset($_FILES['image']['type'])) {
+        if(isset($_FILES['image']['type'])) {
             move_uploaded_file($_FILES['image']['tmp_name'], "img" . DIRECTORY_SEPARATOR . Message::getLastId() . "." . $imageExtension);
         }
 
