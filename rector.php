@@ -11,7 +11,6 @@ use Rector\Arguments\Rector\ClassMethod\ArgumentAdderRector;
 use Rector\Arguments\Rector\FuncCall\FunctionArgumentDefaultValueReplacerRector;
 use Rector\TypeDeclaration\Rector\FunctionLike\ReturnTypeDeclarationRector;
 
-
 return static function (ContainerConfigurator $containerConfigurator): void {
 // here we can define, what sets of rules will be applied
 // tip: use "SetList" class to autocomplete sets
@@ -20,7 +19,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->import(SetList::TYPE_DECLARATION);
     $containerConfigurator->import(SetList::TYPE_DECLARATION_STRICT);
     $containerConfigurator->import(SetList::PSR_4);
-   $containerConfigurator->import(SetList::NAMING);
+    $containerConfigurator->import(SetList::NAMING);
     $containerConfigurator->import(SetList::PHP_74);
 
 
@@ -31,5 +30,4 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services();
     $services->set(TypedPropertyRector::class);
     $services->set(FunctionArgumentDefaultValueReplacerRector::class)->configure([new ReplaceFuncCallArgumentDefaultValue('version_compare', 2, 'gte', 'ge')]);
-
 };

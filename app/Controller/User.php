@@ -3,17 +3,32 @@
 namespace App\Controller;
 
 use Core\AbstractController;
+use Core\DataBase;
 use Core\Normalizer;
 use Core\Validator;
 use PharIo\Manifest\ElementCollection;
+use PhpParser\Node\Expr\PreInc;
 
 class User extends AbstractController
 {
-    public $errors;
-    public function indexAction(): void
+
+    private array $errors = [];
+    private string $pathToPatterns = PATH_TO_ERROR_PATTERNS.DIRECTORY_SEPARATOR."User";
+
+    /**
+     * @throws \Core\RedirectException
+     */
+    public function indexAction(bool $print = true): void
     {
+
+        if(!$print)
+        {
+            ob_start();
+        }
+
         if (!isset($_SESSION['id'])) {
-            echo $this->getView()->render('User/authorization.phtml', []);
+            $this->errors[] = USER_NOT_AUTHORIZED;
+            echo $this->getView()->render($this->pathToPatterns, [], 'authorization.twig',0,0,0);
         } else {
             $this->redirect('/html/blog');
         }
@@ -26,10 +41,14 @@ class User extends AbstractController
      * Если массив $_POST не пустой, проверяет корректность заполнения полей и авторизует пользователя
      * @throws \Core\RedirectException
      */
-    public function authorizationAction(): void
+    public function authorizationAction(bool $print = true): void
     {
+        if(!$print)
+        {
+            ob_start();
+        }
 
-        Normalizer::normalizaSpecialChars($_POST);
+        Normalizer::normalizeSpecialChars($_POST);
         foreach ($_POST as $key => $item) {
             $_POST[$key] = Normalizer::normalizeSpaces($item);
         }
@@ -45,6 +64,7 @@ class User extends AbstractController
         $email = $_POST['email'];
         $flag = 1;
         $validator = new Validator();
+
         if (!empty($_POST)) {
             $flag = 0;
         }
@@ -53,41 +73,49 @@ class User extends AbstractController
             $this->redirect('/html/user/index');
         } else {
             $notEmptyFields = $validator->validateFormNotEmpty($_POST, ['password_repeat']);
-            $emptyFields = Validator::validateFormEmpty($_POST);
+            $user = new \App\Model\User('',$password, $name, $email,'');
+
+            $dbUser = \App\Model\User::getByEmail($email);
+
             if (count($notEmptyFields) != count($fieldsErrors)) {
-                setcookie('errors', json_encode($emptyFields));
-                echo $this->
-                getView()->
-                render('User/authorizationErr.phtml', ['errCode' => array_diff_key($fieldsErrors, array_flip($notEmptyFields))]);
+
+                echo $this->getView()->render($this->pathToPatterns
+                    , ['errCodes' => array_diff_key($fieldsErrors, array_flip($notEmptyFields))],
+                    'authorizationErr.twig',0,0,0);
                 return;
             }
 
-            setcookie('errors', '', time() - 1);
-            if (empty(\App\Model\User::getByName($name))) {
-                $this->errors[] = USER_NOT_EXIST;
-                echo $this->getView()->render('User/authorizationErr.phtml', ['errCode' => [USER_NOT_EXIST]]);
-                return;
-            }
 
-            if (($user = \App\Model\User::getByEmail($email)) === null) {
+            if (empty($dbUser)) {
                 $this->errors[] = EMAIL_NOT_EXIST;
-                setcookie('errors', '', time() - 1);
-                echo $this->getView()->render('User/authorizationErr.phtml', ['errCode' => [USER_NOT_EXIST]]);
+               echo $this->getView()->render($this->pathToPatterns, ['errCodes' => [EMAIL_NOT_EXIST]], 'authorizationErr.twig',0,0,0);
+
+
+               return;
+           }
+
+            if ($user->getName() !== $dbUser->getName()) {
+                $this->errors[] = NAME_NOT_EXIST;
+
+                echo $this->getView()->render($this->pathToPatterns, ['errCodes' => [NAME_NOT_EXIST]], 'authorizationErr.twig',0,0,0);
+
                 return;
             }
 
-            if (!\App\Model\User::checkPassword($name, $password)) {
+
+            if (\App\Model\User::getHash($user->getPassword()) !== $dbUser->getPassword()) {
                 $this->errors[] = PASSWORDS_NOT_MATCHES;
-                setcookie('errors', json_encode($emptyFields));
-                echo $this->getView()->render('User/authorizationErr.phtml', ['errCode' => [PASSWORDS_NOT_MATCHES]]);
+                echo $this->getView()->render($this->pathToPatterns, ['errCodes' => [PASSWORDS_NOT_MATCHES]], 'authorizationErr.twig',0,0,0);
                 return;
             }
 
 
-            setcookie('errors', '', time() - 1);
-            $_SESSION['id'] = $user->getId();
+            $_SESSION['id'] = $dbUser->getId();
+
             $this->redirect('/html/blog');
         }
+
+
     }
 
 
@@ -98,17 +126,22 @@ class User extends AbstractController
      * и в случае успеха регистрация пользователя
      * @throws \Core\RedirectException
      */
-    public function registerAction(): void
+    public function registerAction(bool $print = true): void
     {
-        Normalizer::normalizaSpecialChars($_POST);
+        if(!$print)
+        {
+            ob_start();
+        }
+
+        Normalizer::normalizeSpecialChars($_POST);
         foreach ($_POST as $key => $item) {
             $_POST[$key] = Normalizer::normalizeSpaces($item);
         }
 
-        $name = $_POST['name'];
-        $email = $_POST['email'];
-        $password = $_POST['password'];
-        $passwordRepeat = $_POST['password_repeat'];
+        $name = $_POST['name'] ?? null;
+        $email = $_POST['email'] ?? null;
+        $password = $_POST['password'] ?? null;
+        $passwordRepeat = $_POST['password_repeat'] ?? null;
         $flag = 0;
         $fieldsErrors =
             [
@@ -125,24 +158,28 @@ class User extends AbstractController
         if ($flag) {
             $validator = new Validator();
             $notEmptyFields = $validator->validateFormNotEmpty($_POST, ['password_repeat']);
-            $emptyFields = Validator::validateFormEmpty($_POST);
+
             if (count($notEmptyFields) != count($fieldsErrors)) {
-                setcookie('errors', json_encode($emptyFields));
-                echo $this->
-                getView()->
-                render('User/registerErr.phtml', ['errCodes' => array_diff_key($fieldsErrors, array_flip($notEmptyFields))]);
+
+                echo $this->getView()->render($this->pathToPatterns
+                    , ['errCodes' => array_diff_key($fieldsErrors, array_flip($notEmptyFields))],
+                    'registerErr.twig',0,0,0);
                 return;
             }
 
             if (\App\Model\User::getByName($name) !== null) {
+
                 $this->errors[] = NAME_ALREADY_EXIST_REGISTRATION;
-                echo $this->getView()->render('User/registerErr.phtml', ['errCodes' => [$this->errors]]);
+                echo $this->getView()->render($this->pathToPatterns, ['errCodes' => $this->errors], 'registerErr.twig',0,0,0);
+
                 return;
             }
 
             if (\App\Model\User::getByEmail($email) !== null) {
                 $this->errors[] = EMAIL_ALREADY_EXIST_REGISTRATION;
-                echo $this->getView()->render('User/registerErr.phtml', ['errCodes' => [$this->errors]]);
+                echo $this->getView()->render($this->pathToPatterns, ['errCodes' => $this->errors], 'registerErr.twig',0,0,0);
+
+
                 return;
             }
 
@@ -164,17 +201,26 @@ class User extends AbstractController
             }
 
             if (!empty($this->errors)) {
-                setcookie('errors', json_encode($this->errors));
-                echo $this->getView()->render('User/registerErr.phtml', ['errCodes' => [$this->errors]]);
+                echo $this->getView()->render($this->pathToPatterns, ['errCodes' => $this->errors], 'registerErr.twig',0,0,0);
+
+
             } else {
-                setcookie('errors', '', time() - 1);
                 $user = new \App\Model\User('', $password, $name, $email, '');
                 $user->save();
                 $this->redirect('/html/user/authorization');
             }
         } else {
-            setcookie('errors', '', time() - 1);
-            echo $this->getView()->render('User/register.phtml', []);
+            echo $this->getView()->render($this->pathToPatterns, [], 'register.twig',0,0,0);
+
         }
+    }
+
+
+    /**
+     * @return mixed[]
+     */
+    public function getErrors() : array
+    {
+        return $this->errors;
     }
 }

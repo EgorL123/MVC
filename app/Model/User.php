@@ -11,46 +11,31 @@ class User extends AbstractModel
     private string $password;
     private string $name;
     private string $email;
-    private string $createDate;
 
-    /**
-     * @return string
-     */
     public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
     public function getPassword(): string
     {
         return $this->password;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getEmail(): string
     {
         return $this->email;
     }
 
-    /**
-     * @return string
-     */
-    public function getCreateDate(): string
+
+    public function setId(string $id) : void
     {
-        return $this->createDate;
+        $this->id = $id;
     }
 
     /**
@@ -59,13 +44,12 @@ class User extends AbstractModel
      * @param $name
      * @param $email
      */
-    public function __construct(string $id, string $password, string $name, string $email, string $date)
+    public function __construct(string $id, string $password, string $name, string $email)
     {
         $this->id = $id;
         $this->password = $password;
         $this->name = $name;
         $this->email = $email;
-        $this->createDate = $date;
     }
 
     /**
@@ -73,12 +57,18 @@ class User extends AbstractModel
      * Возвращает число измененных строк либо выкидывает исключение
      * @return void
      */
-    public function save(): int
+    public function save(bool $encrypt = true): int
     {
         $pdo = DataBase::getInstance();
         $sql = "INSERT INTO users(`email`, `password`, `name`) VALUES (:email, :password, :name)";
 
-        return $pdo->exec($sql, ['email' => $this->email, 'password' => self::getHash($this->password), 'name' => $this->name]);
+        $password = $this->password;
+
+        if($encrypt) {
+            $password = self::getHash($password);
+        }
+
+        return $pdo->exec($sql, ['email' => $this->email, 'password' => $password, 'name' => $this->name]);
     }
 
     /**
@@ -107,7 +97,7 @@ class User extends AbstractModel
         $pdo = DataBase::getInstance();
         $sql = "SELECT * FROM users WHERE name = :name";
 
-        if ($result = $pdo->fetchAll($sql, ['name' => $name])) {
+        if (!empty($result = $pdo->fetchAll($sql, ['name' => $name]))) {
             $data = $result[0];
             return new self($data['id'], $data['password'], $data['name'], $data['email'], $data['create_date']);
         }
@@ -117,7 +107,6 @@ class User extends AbstractModel
 
     /**
      * Получение модели пользователя по email
-     * @param string $name
      * @return array
      */
     public static function getByEmail(string $email): ?User
@@ -125,7 +114,8 @@ class User extends AbstractModel
         $pdo = DataBase::getInstance();
         $sql = "SELECT * FROM users WHERE email = :email";
 
-        if ($result = $pdo->fetchAll($sql, ['email' => $email])) {
+
+        if (!empty($result = $pdo->fetchAll($sql, ['email' => $email]))) {
             $data = $result[0];
             return new self($data['id'], $data['password'], $data['name'], $data['email'], $data['create_date']);
         }
@@ -134,15 +124,7 @@ class User extends AbstractModel
     }
 
 
-    /**
-     * Проверка правильности пароля пользователя
-     */
-    public static function checkPassword(string $name, string $password): bool
-    {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT * FROM users WHERE name = :name";
-        return ($result = $pdo->fetchAll($sql, ['name' => $name])) && $result[0]['password'] == self::getHash($password);
-    }
+
 
     /**
      * Получение захэшированного пароля с солью
@@ -151,4 +133,17 @@ class User extends AbstractModel
     {
         return sha1($password . PASSWORD_SALT);
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function delete(): bool
+    {
+        $pdo = DataBase::getInstance();
+        $sql = "DELETE FROM users WHERE id = {$this->getId()}";
+
+        return $pdo->exec($sql,[]);
+    }
+
+
 }

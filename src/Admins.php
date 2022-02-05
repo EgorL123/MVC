@@ -2,4 +2,4 @@
 
 namespace Core;
 
-\define('ADMINS', [587]);
+\define('ADMINS', [0]);

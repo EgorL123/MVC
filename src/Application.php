@@ -9,6 +9,7 @@ class Application
     private \Core\Route $route;
     private $controller;
     private $action;
+
     public function __construct()
     {
         $this->route = new Route();
@@ -23,7 +24,7 @@ class Application
             $this->initController();
             $this->initUser();
             $action = $this->action;
-            $this->controller->setView(new View());
+            $this->controller->setView(new Twig());
             $this->controller->$action();
         } catch (RedirectException $e) {
             header("Location:" . $e->getUrl());
@@ -41,8 +42,6 @@ class Application
 
     public function addRoutes(): void
     {
-
-
 
         /** @uses \App\Controller\User::registerAction() */
         $this->route->addRoute('user/register', User::class, 'register');

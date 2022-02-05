@@ -20,8 +20,15 @@ class Route
                 $this->actionName = $route[1];
             } else {
                 $parts = explode('/', $path);
-                $this->controllerName = '\\App\\Controller\\' . ucfirst(strtolower($parts[2]));
+
+                if(!empty($parts[2])) {
+                    $this->controllerName = '\\App\\Controller\\' . ucfirst(strtolower($parts[2]));
+                } else {
+                    $this->controllerName = "\\App\\Controller\\User";
+                }
+
                 $this->actionName = 'index';
+
 
 
                 if (!class_exists($this->controllerName)) {

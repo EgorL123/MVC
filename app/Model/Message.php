@@ -10,27 +10,23 @@ class Message extends AbstractModel
     private const MAX_MESSAGES_COUNT = 20;
 
     /**
-     * @param $id
-     * @param $userId
-     * @param $text
-     * @param $date
-     */
-    public function __construct()
-    {
-    }
-
-    /**
      * Сохранение сообщения в БД.
      * @param $imgExtension
      */
-    public static function send(string $userId, string $text, $imgExtension): int
+    public static function send(string $userId, string $text, $imgExtension): ?int
     {
         $pdo = DataBase::getInstance();
         $sql = "INSERT INTO messages(`user_id`, `text`, `image_src`) VALUES(:userId, :text, :image_src)";
 
         $imageLink = empty($imgExtension) ? null : (self::getLastId() + 1) . "." . $imgExtension;
 
-        return $pdo->exec($sql, ['userId' => $userId, 'text' => $text,'image_src' => $imageLink]);
+        try {
+            $pdo->exec($sql, ['userId' => $userId, 'text' => $text, 'image_src' => $imageLink]);
+            return self::getLastId();
+        } catch (\Exception $e)
+        {
+            return 0;
+        }
     }
 
     /**
@@ -45,16 +41,23 @@ class Message extends AbstractModel
         return $pdo->fetchAll($sql, []);
     }
 
+    public static function getById(string $id)
+    {
+        $pdo = DataBase::getInstance();
+        $sql = "SELECT * FROM messages WHERE id = $id";
+
+        return $pdo->fetchAll($sql, []);
+
+    }
 
     /**
      * Получение идентификатора последнего сообщения
      */
-    public static function getLastId(): int
+    public static function getLastId(): ?int
     {
         $pdo = DataBase::getInstance();
-        $sql = "SELECT id FROM messages ORDER BY id DESC";
 
-        return $pdo->fetchAll($sql, [])[0]['id'];
+        return $pdo->lastInsertId();
     }
 
 
@@ -80,5 +83,14 @@ class Message extends AbstractModel
         $sql = "SELECT * FROM messages WHERE user_id = :id LIMIT " . self::MAX_MESSAGES_COUNT;
 
         return json_encode($pdo->fetchAll($sql, ['id' => $userId]));
+    }
+
+
+    public static function deleteAll(): void
+    {
+        $pdo = DataBase::getInstance();
+        $sql = "DELETE FROM messages";
+
+        $pdo->exec($sql, []);
     }
 }

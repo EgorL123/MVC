@@ -25,9 +25,12 @@ class DataBase
         $dbname = DB_NAME;
         $username = USER_NAME;
         $passw = PASSWORD;
+        $port = PORT;
 
         if (!$this->pdo) {
-            $this->pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $passw);
+
+
+            $this->pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $username, $passw);
         }
 
         return $this->pdo;
@@ -97,7 +100,7 @@ class DataBase
         return $this->log;
     }
 
-    public function getConnection()
+    public function getConnection(): ?\PDO
     {
         return $this->connect();
     }

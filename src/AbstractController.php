@@ -7,7 +7,8 @@ use Core\RedirectException;
 
 abstract class AbstractController
 {
-    private \Core\View $view;
+    private Twig $view;
+
 
 
     public function redirect(string $url)
@@ -15,17 +16,15 @@ abstract class AbstractController
          throw new RedirectException($url);
     }
 
-    public function setView(View $view): void
+    public function setView(Twig $twig): void
     {
-        $this->view = $view;
+        $this->view = $twig;
     }
 
-    public function getView(): \Core\View
+    public function getView(): \Core\Twig
     {
         return $this->view;
     }
 
-    public function setUser(User $user): void
-    {
-    }
+
 }

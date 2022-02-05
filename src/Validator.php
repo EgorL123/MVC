@@ -152,6 +152,7 @@ class Validator
 
     /**
      * Проверка входящего изображения на корректный тип
+     * @return mixed[]
      */
     public static function validateImageType(string $type): array
     {
