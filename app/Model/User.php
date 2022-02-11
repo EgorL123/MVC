@@ -2,87 +2,150 @@
 
 namespace App\Model;
 
-use Core\AbstractModel;
+use App\Model\Message;
 use Core\DataBase;
+use Illuminate\Database\Eloquent\Model;
 
-class User extends AbstractModel
+class User extends Model
 {
-    private string $id;
-    private string $password;
-    private string $name;
-    private string $email;
+    private ?string $id;
 
-    public function getId(): string
+    private ?string $password;
+
+    private ?string $name;
+
+    private ?string $email;
+
+    /**
+     * @var mixed[]|null
+     */
+    public $table = "users";
+
+    /**
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * @var string
+     */
+    protected $connection = 'default';
+
+    /**
+     * @var string[]
+     */
+    protected $fillable = ['password', 'name', 'email'];
+
+    /**
+     * @param array|null $table
+     * @param string|null $primaryKey
+     * @param string|null $connection
+     * @param array|null $fillable
+     * @param string|null $id
+     * @param string|null $password
+     * @param string|null $name
+     * @param string|null $email
+     */
+    public function __construct(
+        array $table = null,
+        string $primaryKey = null,
+        string $connection = null,
+        array $fillable = null,
+        string $id = null,
+        string $password = null,
+        string $name = null,
+        string $email = null
+    ) {
+        $this->id = $id;
+        $this->password = $password;
+        $this->name = $name;
+        $this->email = $email;
+        $this->table = $table;
+    }
+
+
+    public function messages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Message::class, 'user_id', 'id');
+    }
+
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
 
-    public function setId(string $id) : void
+    /**
+     * @return $this
+     */
+    public function setId(string $id): self
     {
         $this->id = $id;
+        return $this;
     }
 
     /**
-     * @param $id
-     * @param $password
-     * @param $name
-     * @param $email
+     * Получение захэшированного пароля с солью
      */
-    public function __construct(string $id, string $password, string $name, string $email)
+    public function getHash(string $password): string
     {
-        $this->id = $id;
-        $this->password = $password;
+        return sha1($password . PASSWORD_SALT);
+    }
+
+
+    public function setName(?string $name): void
+    {
         $this->name = $name;
+    }
+
+    public function setEmail(?string $email): void
+    {
         $this->email = $email;
     }
 
-    /**
-     * Сохранение модели пользователя в базу данных
-     * Возвращает число измененных строк либо выкидывает исключение
-     * @return void
-     */
-    public function save(bool $encrypt = true): int
+    public function setPassword(string $password): void
     {
-        $pdo = DataBase::getInstance();
-        $sql = "INSERT INTO users(`email`, `password`, `name`) VALUES (:email, :password, :name)";
-
-        $password = $this->password;
-
-        if($encrypt) {
-            $password = self::getHash($password);
-        }
-
-        return $pdo->exec($sql, ['email' => $this->email, 'password' => $password, 'name' => $this->name]);
+        $this->password = $password;
     }
 
     /**
      * Получение модели пользователя по идентификатору
-     * @return array
+     * @return User|null
      */
-    public static function get(string $userId): ?User
+    public function get(string $userId)
     {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT * FROM users WHERE id = :id";
+        try {
+            $data = (self::query()->where('id', '=', $userId)->get()->toArray())[0];
 
-        if ($result = $pdo->fetchAll($sql, ['id' => $userId])) {
-            $data = $result[0];
-            return new self($data['id'], $data['password'], $data['name'], $data['email'], $data['create_date']);
+            if (!empty($data)) {
+                return new self(
+                    null,
+                    null,
+                    null,
+                    null,
+                    $data['id'],
+                    $data['password'],
+                    $data['name'],
+                    $data['email']
+                );
+            }
+        } catch (\Exception $exception) {
+            return null;
         }
 
         return null;
@@ -90,16 +153,28 @@ class User extends AbstractModel
 
     /**
      * Получение модели пользователя по имени
-     * @return array
+     * @return User|null
      */
-    public static function getByName(string $name): ?User
+    public function getByName(string $name)
     {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT * FROM users WHERE name = :name";
 
-        if (!empty($result = $pdo->fetchAll($sql, ['name' => $name]))) {
-            $data = $result[0];
-            return new self($data['id'], $data['password'], $data['name'], $data['email'], $data['create_date']);
+        try {
+            $data = (self::query()->where('name', '=', $name)->get()->toArray())[0];
+
+            if (!empty($data)) {
+                return new self(
+                    null,
+                    null,
+                    null,
+                    null,
+                    $data['id'],
+                    $data['password'],
+                    $data['name'],
+                    $data['email'],
+                );
+            }
+        } catch (\Exception $exception) {
+            return null;
         }
 
         return null;
@@ -107,43 +182,83 @@ class User extends AbstractModel
 
     /**
      * Получение модели пользователя по email
-     * @return array
+     * @return User|null
      */
-    public static function getByEmail(string $email): ?User
+    public function getByEmail(string $email)
     {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT * FROM users WHERE email = :email";
+        $data = (self::query()->where('email', '=', $email)->get()->toArray())[0];
 
-
-        if (!empty($result = $pdo->fetchAll($sql, ['email' => $email]))) {
-            $data = $result[0];
-            return new self($data['id'], $data['password'], $data['name'], $data['email'], $data['create_date']);
+        if (!empty($data)) {
+            return new self(
+                null,
+                null,
+                null,
+                null,
+                $data['id'],
+                $data['password'],
+                $data['name'],
+                $data['email']
+            );
         }
 
         return null;
     }
 
-
-
-
     /**
-     * Получение захэшированного пароля с солью
+     * Удаление модели пользователя по идентификатору
+     * @return int
      */
-    public static function getHash(string $password): string
+    public function delete(): ?int
     {
-        return sha1($password . PASSWORD_SALT);
+        try {
+            return self::destroy($this->id);
+        } catch (\Exception $exception) {
+            return -1;
+        }
     }
 
     /**
-     * @throws \Exception
+     * Удаление пользователя по идентификатору
      */
-    public function delete(): bool
+    public function deleteById(string $id): int
     {
-        $pdo = DataBase::getInstance();
-        $sql = "DELETE FROM users WHERE id = {$this->getId()}";
-
-        return $pdo->exec($sql,[]);
+        try {
+            return self::query()->where('id', '=', $id)->delete();
+        } catch (\Exception $exception) {
+            return -1;
+        }
     }
 
+    /**
+     * Сохранение модели пользователя в базу данных
+     */
+    public function send(bool $encrypt = true): int
+    {
+        $password = $this->password;
 
+        if ($encrypt) {
+            $password = self::getHash($this->password);
+        }
+
+        try {
+            return $this->fill(['name' => $this->name, 'email' => $this->email, 'password' => $password])->save();
+        } catch (\Exception $exception) {
+            return -1;
+        }
+    }
+
+    /**
+     * Изменение данных пользователя
+     */
+    public function change(): int
+    {
+        return self::query()->where('id', '=', $this->id)
+            ->update(
+                [
+                    'email' => $this->email,
+                    'name' => $this->name,
+                    'password' => $this->password
+                ]
+            );
+    }
 }

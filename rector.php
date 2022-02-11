@@ -21,6 +21,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->import(SetList::PSR_4);
     $containerConfigurator->import(SetList::NAMING);
     $containerConfigurator->import(SetList::PHP_74);
+    $containerConfigurator->import(SetList::CODING_STYLE);
 
 
     $services = $containerConfigurator->services();
@@ -30,4 +31,5 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services();
     $services->set(TypedPropertyRector::class);
     $services->set(FunctionArgumentDefaultValueReplacerRector::class)->configure([new ReplaceFuncCallArgumentDefaultValue('version_compare', 2, 'gte', 'ge')]);
+
 };

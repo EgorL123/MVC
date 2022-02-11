@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../../public_html/css/style.css">
+    <title>Document</title>
+</head>
+<body>
+<h1 style="color: white">Создание и удаление пользователей</h1>
+<hr>
+<div class="create_user_row">
+    <div class="create_user_column">
+        <p style="color: white;">Создать</p>
+        <form action="/public_html/user/register" method="post">
+            <input type="email" placeholder="введите email" name="email">
+            <br>
+            <input type="text" placeholder="введите имя" name="name">
+            <br>
+            <input type="password" placeholder="введите пароль" name="password">
+            <br>
+            <input type="password" placeholder="введите пароль повторно" name="password_repeat">
+            <br>
+            <input type="submit">
+
+    </form>
+    </div>
+    <div class="create_user_column">
+        <p style="color: white;">Изменить</p>
+        <form action="/public_html/user/update" method="post">
+            <input type="text" name="userId" placeholder="идентификатор">
+            <br>
+            <input type="email" placeholder="новый email" name="email">
+            <br>
+            <input type="text" placeholder="новое имя" name="name">
+            <br>
+            <input type="password" placeholder="новый пароль" name="password">
+            <br>
+            <input type="submit">
+
+    </form>
+    </div>
+
+    <div class="create_user_column">
+        <p style="color: white;">Удалить</p>
+        <form action="/public_html/user/delete" method="post">
+            <input type="password" placeholder="идетнификатор" name="userId">
+            <br>
+            <input type="submit">
+
+        </form>
+    </div>
+
+
+</div>
+</body>
+</html>

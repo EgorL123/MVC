@@ -1,43 +1,37 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <phpunit>
-    <testsuites>
-    <testsuite name="ValidatorTest">
+   <testsuites>
+     <testsuite name="ValidatorTest">
       <directory suffix="Test.php">./tests/Unit/Source/Validator</directory>
     </testsuite>
 
     <testsuite name="UserTest">
-        <directory suffix="Test.php">./tests/Unit/Model/User</directory>
+        <directory suffix="Test.php">./tests/Unit/Model/User/SendTest.php</directory>
     </testsuite>
 
     <testsuite name="NormalizerTest">
         <directory suffix="Test.php">./tests/Unit/Source/Normalizer</directory>
     </testsuite>
 
-    <testsuite name="MessageTest">
-        <directory suffix="Test.php">./tests/Unit/Model/Message/SendMessageTest.php</directory>
+    <!--<testsuite name="MessageTest">
+        <directory suffix="Test.php">./tests/Unit/Model/Message</directory>
     </testsuite>
-      <testsuite name="UserControllerTest">
-        <directory suffix="Test.php">./tests/Unit/Controller/User</directory>
-    </testsuite>
+
         <testsuite name="BlogControllerTest">
             <directory suffix="Test.php">./tests/Unit/Controller/Blog</directory>
         </testsuite>
 
-        <testsuite name="DataBaseTest">
-            <directory suffix="Test.php">./tests/Unit/Source/DataBase</directory>
-        </testsuite>
+        <testsuite name="UserControllerTest">
+            <directory suffix="Test.php">./tests/Unit/Controller/User</directory>
+        </testsuite>-->
 
     </testsuites>
 
     <filter>
         <whitelist>
-            <directory suffix="Test.php">./tests/Unit/Source/Validator</directory>
-            <directory suffix="Test.php">./tests/Unit/Model/User</directory>
-            <directory suffix="Test.php">./tests/Unit/Sourced/Normalizer</directory>
-            <directory suffix="Test.php">./tests/Unit/Model/Message</directory>
-            <directory suffix="Test.php">./tests/Unit/Controller/Blog</directory>
-            <directory suffix="Test.php">./tests/Unit/Controller/User</directory>
-            <directory suffix="Test.php">./tests/Unit/Source/DataBase</directory>
+            <directory suffix=".php">./app</directory>
+            <directory suffix="Normalizer.php">./src</directory>
+            <directory suffix="Validator.php">./src</directory>
         </whitelist>
 
     </filter>

@@ -1,0 +1,87 @@
+body
+{
+    background: rgb(33 33 33);
+    font-family: sans-serif;
+    padding: 20px;
+}
+
+.user_info
+{
+    display: inline-block;
+    color: whitesmoke;
+}
+
+.user_info_wrap
+{
+    padding: 20px;
+    border: 1px solid white;
+}
+
+.user_info_data
+{
+    display: inline-block;
+    color: rgb(112 87 181);
+}
+
+.redirect_link
+{
+    color: whitesmoke;
+}
+
+.redirect_link:hover
+{
+    color: rgb(112 87 181);
+}
+
+
+.error_text
+{
+    color: red;
+}
+
+.delete_message_btn
+{
+    width: 100px;
+    height: 50px;
+    border: 1px solid red;
+    color: red;
+    background: rgb(33 33 33);
+    cursor: pointer;
+}
+
+.delete_message_btn:hover
+{
+    border: 1px solid white;
+    color: white;
+}
+
+.h_message
+{
+    color: whitesmoke;
+}
+
+.header_h1
+{
+    color: white;
+}
+
+
+.header_h1.admin
+{
+    color: green;
+    align-self: center;
+}
+
+.header_h1.admin:hover
+{
+    color: white;
+    cursor: pointer;
+}
+
+.header_h_row
+{
+    display: flex;
+    justify-content: space-between;
+}
+
+

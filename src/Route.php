@@ -5,11 +5,17 @@ namespace Core;
 class Route
 {
     private $controllerName;
+
     private $actionName;
+
     private bool $processed = false;
+
     private $routes;
 
 
+    /**
+     * @throws RouteException
+     */
     private function process(): void
     {
         if (!$this->processed) {
@@ -21,10 +27,10 @@ class Route
             } else {
                 $parts = explode('/', $path);
 
-                if(!empty($parts[2])) {
+                if (!empty($parts[2])) {
                     $this->controllerName = '\\App\\Controller\\' . ucfirst(strtolower($parts[2]));
                 } else {
-                    $this->controllerName = "\\App\\Controller\\User";
+                    $this->controllerName = \App\Controller\User::class;
                 }
 
                 $this->actionName = 'index';
@@ -44,14 +50,22 @@ class Route
     }
 
 
+    /**
+     * @param $path
+     * @param $controllerName
+     * @param $actionName
+     */
     public function addRoute($path, $controllerName, $actionName): void
     {
-        $this->routes["/html/" . $path] = [
+        $this->routes["/public_html/" . $path] = [
             $controllerName,
             $actionName
         ];
     }
 
+    /**
+     * @throws RouteException
+     */
     public function getControllerName(): string
     {
         if (!$this->processed) {
@@ -61,6 +75,9 @@ class Route
         return $this->controllerName;
     }
 
+    /**
+     * @throws RouteException
+     */
     public function getActionName(): string
     {
         if (!$this->processed) {

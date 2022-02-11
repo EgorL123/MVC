@@ -2,52 +2,97 @@
 
 namespace App\Model;
 
-use Core\AbstractModel;
-use Core\DataBase;
+use Illuminate\Database\Eloquent\Model;
 
-class Message extends AbstractModel
+class Message extends Model
 {
-    private const MAX_MESSAGES_COUNT = 20;
+    /**
+     * @var int
+     */
+    protected const MAX_MESSAGES_COUNT = 20;
 
     /**
-     * Сохранение сообщения в БД.
-     * @param $imgExtension
+     * @var string
      */
-    public static function send(string $userId, string $text, $imgExtension): ?int
+    public $table = "messages";
+
+    /**
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * @var string
+     */
+    protected $connection = 'default';
+
+    /**
+     * @var string[]
+     */
+    protected $fillable = ['user_id', 'text', 'image_src'];
+
+
+    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        $pdo = DataBase::getInstance();
-        $sql = "INSERT INTO messages(`user_id`, `text`, `image_src`) VALUES(:userId, :text, :image_src)";
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 
-        $imageLink = empty($imgExtension) ? null : (self::getLastId() + 1) . "." . $imgExtension;
 
+    /**
+     * Удаление сообщения по идентификатору
+     */
+    public static function deleteById(string $messageId): int
+    {
         try {
-            $pdo->exec($sql, ['userId' => $userId, 'text' => $text, 'image_src' => $imageLink]);
-            return self::getLastId();
-        } catch (\Exception $e)
-        {
-            return 0;
+            return self::destroy($messageId);
+        } catch (\Exception $exception) {
+            return -1;
         }
+    }
+
+    /**
+     * Удаление всех сообщений пользователя
+     * @return mixed
+     */
+    public static function deleteAllById(string $userId)
+    {
+        try {
+            return self::query()->where('user_id', '=', $userId)->delete();
+        } catch (\Exception $exception) {
+            return -1;
+        }
+    }
+
+    public static function deleteAll(): int
+    {
+        return self::query()->delete();
     }
 
     /**
      * Получение списка всех сообщений
      * @return mixed[]
      */
-    public static function getAll(): array
+    public function getAll(): array
     {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT messages.*, users.name FROM messages INNER JOIN users ON messages.user_id = users.id ORDER BY messages.id DESC LIMIT " . self::MAX_MESSAGES_COUNT;
 
-        return $pdo->fetchAll($sql, []);
+        $messages = self::with('users')->limit(self::MAX_MESSAGES_COUNT)
+            ->orderBy('id', 'DESC')->get()->toArray();
+
+        foreach (array_keys($messages) as $key) {
+            $messages[$key]['name'] = $messages[$key]['users']['name'];
+        }
+
+
+        return $messages;
     }
 
-    public static function getById(string $id)
+    public function getById(string $id)
     {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT * FROM messages WHERE id = $id";
-
-        return $pdo->fetchAll($sql, []);
-
+        try {
+            return self::query()->where('user_id', '=', $id)->get()->toArray();
+        } catch (\Exception $exception) {
+            return -1;
+        }
     }
 
     /**
@@ -55,43 +100,37 @@ class Message extends AbstractModel
      */
     public static function getLastId(): ?int
     {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT id FROM messages ORDER BY id DESC";
 
-        return $pdo->fetchAll($sql,[])[0]['id'];
+        $arr = self::query()->orderBy('id', 'DESK')->get()->toArray();
+        return $arr[0]['id'];
     }
-
-
-    /**
-     * Удаление сообщения по идентификатору
-     * @return void
-     */
-    public static function delete(string $id): int
-    {
-        $pdo = DataBase::getInstance();
-        $sql = "DELETE FROM messages WHERE id = :id";
-
-        return $pdo->exec($sql, ['id' => $id]);
-    }
-
 
     /**
      * Получение сообщений пользователя по id пользователя
      */
-    public static function getAllByUserIdJSON(string $userId): string
+    public static function getAllByUserIdJSON(string $userId): ?string
     {
-        $pdo = DataBase::getInstance();
-        $sql = "SELECT * FROM messages WHERE user_id = :id LIMIT " . self::MAX_MESSAGES_COUNT;
+        try {
+            $messages = self::query()->where('user_id', '=', $userId)->get()->toArray();
+        } catch (\Exception $exception) {
+            return null;
+        }
 
-        return json_encode($pdo->fetchAll($sql, ['id' => $userId]));
+        return json_encode($messages);
     }
 
-
-    public static function deleteAll(): void
+    /**
+     * Отправка сообщения
+     */
+    public function send(string $userId, string $text, ?string $imgExtension): ?int
     {
-        $pdo = DataBase::getInstance();
-        $sql = "DELETE FROM messages";
+        $imgSrc = empty($imgExtension) ? null : (self::getLastId() + 1) . "." . $imgExtension;
 
-        $pdo->exec($sql, []);
+        try {
+            $this->fill(['user_id' => $userId, 'text' => $text, 'image_src' => $imgSrc])->save();
+            return $this->id;
+        } catch (\Exception $exception) {
+            return -1;
+        }
     }
 }

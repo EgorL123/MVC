@@ -4,12 +4,10 @@ namespace Core;
 
 use App\Controller\User;
 
-/**
- * @property-read User $user
- */
 class View
 {
     private $template;
+
     private array $data = [];
 
     public function __construct()

@@ -5,23 +5,20 @@ namespace Core;
 class Normalizer
 {
     /**
-     * Удаление лишних пробелов
-     * @param $str
+     * Удаление  пробелов
      */
-    public static function normalizeSpaces($str): string
+    public static function normalizeSpaces(IField $field): string
     {
         $pattern = "/\s/";
 
-        return preg_replace($pattern, '', $str);
+        return preg_replace($pattern, '', $field->get());
     }
 
     /**
-     * замена спецсимволов
+     * Замена спецсимволов
      */
-    public static function normalizeSpecialChars(array &$data): void
+    public static function normalizeSpecialChars(IField $field): string
     {
-        foreach ($data as $key => $value) {
-            $data[$key] = htmlspecialchars($value);
-        }
+        return htmlspecialchars($field->get());
     }
 }
